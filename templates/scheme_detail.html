@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}{{ scheme.name }} - PrajaConnectAI{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 16px;">
+    <a href="/schemes" class="btn-card-action btn-outline-primary" style="padding: 6px 14px;">
+        <i class="bi bi-arrow-left"></i> {{ _t('Schemes') }}
+    </a>
+</div>
+
+<div class="item-card" style="padding: 24px; position: relative;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+        <div>
+            <span class="badge-age" style="background: rgba(37, 99, 235, 0.08); color: var(--primary); margin-bottom: 8px;">
+                <i class="bi {{ scheme.icon or 'bi-award' }}"></i> {{ _t(scheme.category) }}
+            </span>
+            <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin-top: 4px;">{{ scheme.name }}</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Eligible Age Group: <strong>{{ scheme.age_group }}</strong></p>
+        </div>
+
+        <form action="/apply/{{ scheme.id }}" method="POST">
+            <button type="submit" class="btn-card-action btn-solid-primary" style="padding: 12px 24px; font-size: 1rem;">
+                <i class="bi bi-send-fill"></i> {{ _t('Apply Now') }}
+            </button>
+        </form>
+    </div>
+
+    <!-- Overview Box -->
+    <div style="background: var(--bg-card-hover); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px;">
+        <h3 style="font-size: 1.1rem; font-weight: 750; color: var(--text-primary); margin-bottom: 8px;">
+            <i class="bi bi-info-circle-fill text-primary"></i> Scheme Overview
+        </h3>
+        <p style="font-size: 0.95rem; color: var(--text-primary); line-height: 1.6;">{{ scheme.description }}</p>
+    </div>
+
+    <!-- Detailed Sections Grid -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: var(--radius-lg); padding: 20px;">
+            <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--secondary); margin-bottom: 10px;">
+                <i class="bi bi-gift-fill"></i> {{ _t('Key Benefits') }}
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-primary); line-height: 1.5;">{{ scheme.benefits }}</p>
+        </div>
+
+        <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.15); border-radius: var(--radius-lg); padding: 20px;">
+            <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--primary); margin-bottom: 10px;">
+                <i class="bi bi-person-check-fill"></i> {{ _t('Eligibility Criteria') }}
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-primary); line-height: 1.5;">{{ scheme.eligibility }}</p>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.15); border-radius: var(--radius-lg); padding: 20px;">
+            <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--warning); margin-bottom: 10px;">
+                <i class="bi bi-file-earmark-check-fill"></i> {{ _t('Required Documents') }}
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-primary); line-height: 1.5;">{{ scheme.documents }}</p>
+        </div>
+
+        <div style="background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.15); border-radius: var(--radius-lg); padding: 20px;">
+            <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--accent); margin-bottom: 10px;">
+                <i class="bi bi-list-ol"></i> {{ _t('How to Apply') }}
+            </h3>
+            <div style="font-size: 0.9rem; color: var(--text-primary); line-height: 1.6; white-space: pre-line;">{{ scheme.how_to_apply }}</div>
+        </div>
+    </div>
+
+    <!-- Official Link Footer -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 16px;">
+        <span style="font-size: 0.85rem; color: var(--text-muted);">
+            <i class="bi bi-shield-lock-fill"></i> Verified Government Portal Information
+        </span>
+        <a href="{{ scheme.official_link }}" target="_blank" class="btn-card-action btn-outline-primary">
+            {{ _t('Official Website') }} <i class="bi bi-box-arrow-up-right"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}

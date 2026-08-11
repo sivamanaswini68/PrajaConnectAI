@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _t('Search Schemes') }} - PrajaConnectAI{% endblock %}
+
+{% block content %}
+<div class="hero-card">
+    <h1 class="hero-welcome">Search Results for "{{ query }}"</h1>
+    <p class="hero-subtitle">
+        Found <strong>{{ total_results }}</strong> matching records in SQLite database.
+    </p>
+
+    <!-- Search input refill -->
+    <form action="/search" method="GET" class="search-box-container">
+        <i class="bi bi-search search-icon-left"></i>
+        <input type="text" 
+               name="q" 
+               value="{{ query }}" 
+               class="search-input" 
+               placeholder="{{ _t('Search government schemes or health camps...') }}" 
+               required>
+        <button type="button" id="micSearchBtn" class="mic-btn-right" title="Voice Search">
+            <i class="bi bi-mic-fill"></i>
+        </button>
+    </form>
+</div>
+
+<!-- Matching Schemes Section -->
+<div style="margin-bottom: 24px;">
+    <div class="section-title-bar">
+        <h2 class="section-title"><i class="bi bi-bank2 text-primary"></i> {{ _t('Government Benefits') }} ({{ schemes | length }})</h2>
+    </div>
+
+    {% if schemes %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+            {% for raw_s in schemes %}
+            {% set s = get_translated_scheme(raw_s) %}
+            <div class="item-card" onclick="showSchemeDetails({{ s.id }}, '{{ s.name | escape }}', '{{ s.category | escape }}', '{{ s.age_group | escape }}', '{{ s.description | escape }}', '{{ s.benefits | escape }}', '{{ s.official_link | escape }}')" style="cursor: pointer;">
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: flex-start;">
+                    <span class="badge-age" style="background: rgba(37, 99, 235, 0.08); color: var(--primary);">{{ _t(s.category) }}</span>
+                    <span class="badge-age">{{ s.age_group }}</span>
+                </div>
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">{{ s.name }}</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">{{ s.description | truncate(100) }}</p>
+                <div style="margin-top: auto; display: flex; justify-content: flex-end; width: 100%;">
+                    <span class="btn-card-action btn-outline-primary" style="padding: 4px 12px; font-size: 0.78rem;">{{ _t('View Details') }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="item-card" style="padding: 20px; color: var(--text-muted);">No matching schemes found.</div>
+    {% endif %}
+</div>
+
+<!-- Matching Health Camps Section -->
+<div>
+    <div class="section-title-bar">
+        <h2 class="section-title"><i class="bi bi-hospital-fill text-success"></i> {{ _t('Health & Wellness') }} ({{ camps | length }})</h2>
+    </div>
+
+    {% if camps %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+            {% for c in camps %}
+            <div class="item-card" onclick="showCampDetails({{ c.id }}, '{{ c.name | escape }}', '{{ c.camp_type | escape }}', '{{ c.age_group | escape }}', '{{ c.date | escape }}', '{{ c.time | escape }}', '{{ c.location | escape }}', '{{ c.organizer | escape }}', '{{ c.description | escape }}')" style="cursor: pointer;">
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: flex-start;">
+                    <span class="badge-age" style="background: rgba(16, 185, 129, 0.08); color: var(--secondary);">{{ _t(c.camp_type) }}</span>
+                    <span class="badge-age">{{ c.age_group }}</span>
+                </div>
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">{{ c.name }}</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">{{ c.description | truncate(100) }}</p>
+                <div style="font-size: 0.8rem; color: var(--text-muted);"><i class="bi bi-geo-alt-fill text-danger"></i> {{ c.location }}, {{ c.district }}</div>
+                <div style="margin-top: auto; display: flex; justify-content: flex-end; width: 100%;">
+                    <span class="btn-card-action btn-solid-primary" style="padding: 4px 12px; font-size: 0.78rem;">{{ _t('View Details') }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="item-card" style="padding: 20px; color: var(--text-muted);">No matching health camps found.</div>
+    {% endif %}
+</div>
+
+<script>
+function showSchemeDetails(id, name, category, age, description, benefits, link) {
+    const html = `
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <span class="badge-age" style="align-self: flex-start;">${category} (${age})</span>
+            <p style="font-size: 0.9rem; line-height: 1.4;">${description}</p>
+            <div style="background: var(--bg-app); padding: 12px; border-radius: 8px; font-size: 0.85rem;">
+                <strong>Benefits:</strong> ${benefits}
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 12px;">
+                <form action="/apply/${id}" method="POST" style="flex: 1;">
+                    <button type="submit" class="btn-card-action btn-solid-primary" style="width: 100%; justify-content: center; padding: 12px;">Apply Now</button>
+                </form>
+                <a href="${link}" target="_blank" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;"><i class="bi bi-box-arrow-up-right"></i> Website</a>
+            </div>
+        </div>
+    `;
+    openBottomSheet(name, html);
+}
+
+function showCampDetails(id, name, type, age, date, time, location, organizer, description) {
+    const html = `
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <span class="badge-age" style="align-self: flex-start; background: rgba(16, 185, 129, 0.08); color: var(--secondary);">${type}</span>
+            <p style="font-size: 0.9rem; line-height: 1.4;">${description}</p>
+            <div style="background: var(--bg-app); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem;">
+                <div><i class="bi bi-calendar3 text-primary"></i> <strong>Date & Time:</strong> ${date} | ${time}</div>
+                <div><i class="bi bi-geo-alt-fill text-danger"></i> <strong>Location:</strong> ${location}</div>
+                <div><i class="bi bi-building"></i> <strong>Organizer:</strong> ${organizer}</div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 12px;">
+                <a href="/camp/${id}" class="btn-card-action btn-solid-primary" style="flex: 1; justify-content: center; padding: 12px;">Book Appointment</a>
+                <a href="https://www.google.com/maps/dir/?api=1&destination=${location}" target="_blank" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;"><i class="bi bi-map-fill"></i> Map</a>
+            </div>
+        </div>
+    `;
+    openBottomSheet(name, html);
+}
+</script>
+{% endblock %}

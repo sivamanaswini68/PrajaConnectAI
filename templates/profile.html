@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _t('Citizen Profile & Preferences') }} - PrajaConnectAI{% endblock %}
+
+{% block content %}
+<div class="hero-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 class="hero-welcome">{{ _t('Citizen Profile & Preferences') }}</h1>
+            <p class="hero-subtitle">Personalize your profile to receive tailored scheme recommendations from our AI Assistant.</p>
+        </div>
+    </div>
+</div>
+
+<div class="item-card" style="max-width: 600px; margin: 0 auto 30px auto; padding: 24px;">
+    <form action="/profile" method="POST">
+        <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="bi bi-person-fill text-primary"></i> {{ _t('Full Name') }}</label>
+            <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="form-group">
+                <label class="form-label"><i class="bi bi-calendar-event text-primary"></i> {{ _t('Age') }}</label>
+                <input type="number" name="age" class="form-control" value="{{ user.age }}" min="1" max="120" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="bi bi-gender-ambiguous text-primary"></i> {{ _t('Gender') }}</label>
+                <select name="gender" class="form-control">
+                    <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+                    <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other / Prefer not to say</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="form-group">
+                <label class="form-label"><i class="bi bi-geo-alt-fill text-primary"></i> {{ _t('State') }}</label>
+                <input type="text" name="state" class="form-control" value="{{ user.state }}" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="bi bi-building text-primary"></i> {{ _t('District') }}</label>
+                <input type="text" name="district" class="form-control" value="{{ user.district }}" required>
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label"><i class="bi bi-translate text-primary"></i> {{ _t('Preferred Language') }}</label>
+            <select name="language" class="form-control">
+                <option value="English" {% if user.language == 'English' %}selected{% endif %}>English</option>
+                <option value="Telugu" {% if user.language == 'Telugu' %}selected{% endif %}>తెలుగు (Telugu)</option>
+                <option value="Hindi" {% if user.language == 'Hindi' %}selected{% endif %}>हिन्दी (Hindi)</option>
+                <option value="Tamil" {% if user.language == 'Tamil' %}selected{% endif %}>தமிழ் (Tamil)</option>
+                <option value="Kannada" {% if user.language == 'Kannada' %}selected{% endif %}>ಕನ್ನಡ (Kannada)</option>
+                <option value="Malayalam" {% if user.language == 'Malayalam' %}selected{% endif %}>മലയാളം (Malayalam)</option>
+            </select>
+        </div>
+
+        <div style="margin-top: 24px;">
+            <button type="submit" class="btn-primary-block">
+                <i class="bi bi-save-fill"></i> {{ _t('Save Profile Details') }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

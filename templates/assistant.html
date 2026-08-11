@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _t('AI Assistant') }} - PrajaConnectAI{% endblock %}
+
+{% block content %}
+<div class="hero-card" style="padding: 20px 24px; margin-bottom: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <h1 class="hero-welcome" style="margin-bottom: 2px;">
+                <i class="bi bi-robot text-primary"></i> {{ _t('AI Assistant') }}
+            </h1>
+            <p class="hero-subtitle">Ask me about government schemes, eligibility, documents or health camps.</p>
+        </div>
+
+        <!-- Controls: Provider & Language -->
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <select id="providerSelect" class="form-control" style="width: 160px; font-size: 0.85rem; padding: 8px 12px; border-radius: 20px;">
+                <option value="local" selected>Local AI (Gemma 3:1b)</option>
+                <option value="mistral">Mistral Cloud AI</option>
+            </select>
+
+            <select id="languageSelect" class="form-control" style="width: 150px; font-size: 0.85rem; padding: 8px 12px; border-radius: 20px;" onchange="selectLanguage(this.value)">
+                <option value="English" {% if current_language == 'English' %}selected{% endif %}>English</option>
+                <option value="Telugu" {% if current_language == 'Telugu' %}selected{% endif %}>తెలుగు (Telugu)</option>
+                <option value="Hindi" {% if current_language == 'Hindi' %}selected{% endif %}>हिन्दी (Hindi)</option>
+                <option value="Tamil" {% if current_language == 'Tamil' %}selected{% endif %}>தமிழ் (Tamil)</option>
+                <option value="Kannada" {% if current_language == 'Kannada' %}selected{% endif %}>ಕನ್ನಡ (Kannada)</option>
+                <option value="Malayalam" {% if current_language == 'Malayalam' %}selected{% endif %}>മലയാളം (Malayalam)</option>
+            </select>
+
+            <button type="button" id="clearChatBtn" class="btn-card-action btn-outline-primary" style="padding: 8px 12px; font-size: 0.85rem;" title="Clear Chat History">
+                <i class="bi bi-trash3"></i> {{ _t('Clear') }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Sample Prompts Chips -->
+<div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 16px; scrollbar-width: none;">
+    <button class="btn-card-action btn-outline-primary" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; white-space: nowrap;" onclick="fillAndSend('What schemes are available for farmers?')">
+        🌾 {{ _t('Farmers') }}
+    </button>
+    <button class="btn-card-action btn-outline-primary" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; white-space: nowrap;" onclick="fillAndSend('What documents are required for PM Kisan?')">
+        📄 PM Kisan Documents
+    </button>
+    <button class="btn-card-action btn-outline-primary" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; white-space: nowrap;" onclick="fillAndSend('I am 65 years old. What schemes may be relevant?')">
+        👵 {{ _t('Senior Citizens') }}
+    </button>
+    <button class="btn-card-action btn-outline-primary" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; white-space: nowrap;" onclick="fillAndSend('Show me eye checkup camps')">
+        👁️ Eye Checkup Camps
+    </button>
+    <button class="btn-card-action btn-outline-primary" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; white-space: nowrap;" onclick="fillAndSend('What schemes are available for women?')">
+        👩 {{ _t('Women') }}
+    </button>
+</div>
+
+<!-- Main Chat Box Container -->
+<div class="chat-container">
+    <div class="chat-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                <i class="bi bi-robot"></i>
+            </div>
+            <div>
+                <div style="font-weight: 700; font-size: 0.95rem;">PrajaConnectAI Assistant</div>
+                <div style="font-size: 0.72rem; opacity: 0.85;">Powered by SQLite RAG + Gemma / Mistral</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scrollable Chat Messages Area -->
+    <div class="chat-messages" id="chatMessages">
+        {% if chat_history %}
+            {% for msg in chat_history %}
+            <div class="message-bubble msg-{{ msg.role }}">
+                {{ msg.content | replace('\n', '<br>') | safe }}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="message-bubble msg-ai">
+                Namaste! 🙏 Welcome to <strong>PrajaConnectAI</strong>.<br>
+                How can I assist you today? You can ask about government welfare schemes, health checkup camps, eligibility criteria, or required documents.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Chat Input Form -->
+    <form class="chat-input-area" id="chatForm">
+        <input type="text" 
+               id="chatInput" 
+               class="chat-input" 
+               placeholder="Type your question about schemes or camps..." 
+               autocomplete="off" 
+               required>
+        <button type="submit" class="chat-send-btn" title="Send Message">
+            <i class="bi bi-send-fill"></i>
+        </button>
+    </form>
+</div>
+
+<script>
+function fillAndSend(text) {
+    const input = document.getElementById('chatInput');
+    if (input) {
+        input.value = text;
+        const form = document.getElementById('chatForm');
+        if (form) {
+            form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        }
+    }
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+{% endblock %}

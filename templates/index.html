@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}PrajaConnectAI - 2-in-1 Citizen Benefit App{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-card">
+    <div class="hero-header-badge">
+        <i class="bi bi-patch-check-fill text-primary"></i>
+        <span>{{ _t('2-in-1 Citizen Benefit App') }}</span>
+    </div>
+    
+    <h1 class="hero-welcome" style="margin-top: 4px;">Namaste 👋</h1>
+    <p class="hero-subtitle">
+        {{ _t('One platform. Many benefits. Every scheme. Every citizen. One tap away.') }}
+    </p>
+
+    <!-- Global Search Bar with Voice Input -->
+    <form action="/search" method="GET" class="search-box-container">
+        <i class="bi bi-search search-icon-left"></i>
+        <input type="text" 
+               name="q" 
+               id="searchInput" 
+               class="search-input" 
+               placeholder="{{ _t('Search government schemes or health camps...') }}" 
+               autocomplete="off" 
+               required>
+        <button type="button" id="micSearchBtn" class="mic-btn-right" title="Voice Search">
+            <i class="bi bi-mic-fill"></i>
+        </button>
+    </form>
+</div>
+
+<!-- Main 2-Column Split Grid -->
+<div class="main-grid">
+
+    <!-- COLUMN 1: GOVERNMENT BENEFITS -->
+    <div class="section-card">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">{{ _t('Government Benefits') }}</h2>
+                <p class="section-sub">{{ _t('Explore, Apply & Track Schemes') }}</p>
+            </div>
+            <a href="/schemes" class="btn-card-action btn-outline-primary" style="padding: 6px 12px; font-size: 0.8rem;">
+                {{ _t('View All') }} <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Categories Row -->
+        <div class="categories-row">
+            <a href="/schemes?category=Students" class="category-item">
+                <div class="category-icon cat-blue"><i class="bi bi-mortarboard-fill"></i></div>
+                <span class="category-label">{{ _t('Students') }}</span>
+            </a>
+            <a href="/schemes?category=Women" class="category-item">
+                <div class="category-icon cat-pink"><i class="bi bi-gender-female"></i></div>
+                <span class="category-label">{{ _t('Women') }}</span>
+            </a>
+            <a href="/schemes?category=Farmers" class="category-item">
+                <div class="category-icon cat-green"><i class="bi bi-person-badge-fill"></i></div>
+                <span class="category-label">{{ _t('Farmers') }}</span>
+            </a>
+            <a href="/schemes?category=Workers" class="category-item">
+                <div class="category-icon cat-purple"><i class="bi bi-briefcase-fill"></i></div>
+                <span class="category-label">{{ _t('Workers') }}</span>
+            </a>
+            <a href="/schemes" class="category-item">
+                <div class="category-icon cat-teal"><i class="bi bi-grid-fill"></i></div>
+                <span class="category-label">{{ _t('More') }}</span>
+            </a>
+        </div>
+
+        <!-- Featured Scheme Cards -->
+        {% for raw_scheme in featured_schemes %}
+        {% set scheme = get_translated_scheme(raw_scheme) %}
+        <div class="item-card" onclick="showSchemeDetails({{ scheme.id }}, '{{ scheme.name | escape }}', '{{ scheme.category | escape }}', '{{ scheme.age_group | escape }}', '{{ scheme.description | escape }}', '{{ scheme.benefits | escape }}', '{{ scheme.official_link | escape }}')" style="cursor: pointer;">
+            <div class="item-info">
+                <h3 class="item-title">{{ scheme.name }}</h3>
+                <p class="item-desc">{{ scheme.description | truncate(65) }}</p>
+                <span class="badge-age"><i class="bi bi-person"></i> {{ scheme.age_group }}</span>
+            </div>
+            <a href="/scheme/{{ scheme.id }}" class="btn-card-action btn-outline-primary" onclick="event.stopPropagation();">
+                {{ _t('Learn More') }} <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
+        {% endfor %}
+
+        <!-- Quick Services Grid -->
+        <div class="quick-services-title">{{ _t('Quick Services') }}</div>
+        <div class="quick-services-grid">
+            <div class="quick-service-card" onclick="handleQuickAction('search_schemes')">
+                <i class="bi bi-search qs-icon"></i>
+                <span class="qs-label">{{ _t('Search Schemes') }}</span>
+            </div>
+            <div class="quick-service-card" onclick="handleQuickAction('check_eligibility')">
+                <i class="bi bi-check2-circle qs-icon"></i>
+                <span class="qs-label">{{ _t('Check Eligibility') }}</span>
+            </div>
+            <div class="quick-service-card" onclick="handleQuickAction('required_documents')">
+                <i class="bi bi-file-text qs-icon"></i>
+                <span class="qs-label">{{ _t('Documents') }}</span>
+            </div>
+            <div class="quick-service-card" onclick="handleQuickAction('nearby_centers')">
+                <i class="bi bi-geo-alt-fill qs-icon"></i>
+                <span class="qs-label">{{ _t('Centers') }}</span>
+            </div>
+            <div class="quick-service-card" onclick="handleQuickAction('check_updates')">
+                <i class="bi bi-bell-fill qs-icon"></i>
+                <span class="qs-label">{{ _t('Updates') }}</span>
+            </div>
+            <div class="quick-service-card" onclick="handleQuickAction('grievance_redressal')">
+                <i class="bi bi-shield-check qs-icon"></i>
+                <span class="qs-label">{{ _t('Grievance') }}</span>
+            </div>
+            <div class="quick-service-card" onclick="handleQuickAction('helpline_support')">
+                <i class="bi bi-headset qs-icon"></i>
+                <span class="qs-label">{{ _t('Helpline') }}</span>
+            </div>
+            <div class="quick-service-card" onclick="handleQuickAction('nearby_support')">
+                <i class="bi bi-people-fill qs-icon"></i>
+                <span class="qs-label">{{ _t('Support') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLUMN 2: HEALTH & WELLNESS -->
+    <div class="section-card">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">{{ _t('Health & Wellness') }}</h2>
+                <p class="section-sub">{{ _t('Book Camps & Stay Healthy') }}</p>
+            </div>
+            <a href="/camps" class="btn-card-action btn-outline-primary" style="padding: 6px 12px; font-size: 0.8rem;">
+                {{ _t('View All') }} <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Health Categories Row -->
+        <div class="categories-row">
+            <a href="/camps?type=Health Checkup" class="category-item">
+                <div class="category-icon cat-blue"><i class="bi bi-people-fill"></i></div>
+                <span class="category-label">{{ _t('Doctors') }}</span>
+            </a>
+            <a href="/camps?type=Eye" class="category-item">
+                <div class="category-icon cat-teal"><i class="bi bi-heart-pulse-fill"></i></div>
+                <span class="category-label">{{ _t('Citizens') }}</span>
+            </a>
+            <a href="/camps?type=Dental" class="category-item">
+                <div class="category-icon cat-orange"><i class="bi bi-person-hearts"></i></div>
+                <span class="category-label">{{ _t('Senior Citizens') }}</span>
+            </a>
+            <a href="/camps?type=Diabetes" class="category-item">
+                <div class="category-icon cat-pink"><i class="bi bi-emoji-smile-fill"></i></div>
+                <span class="category-label">{{ _t('Child Care') }}</span>
+            </a>
+            <a href="/camps" class="category-item">
+                <div class="category-icon cat-purple"><i class="bi bi-grid-fill"></i></div>
+                <span class="category-label">{{ _t('More') }}</span>
+            </a>
+        </div>
+
+        <!-- Featured Health Camps Cards -->
+        {% for camp in featured_camps %}
+        <div class="item-card" onclick="showCampDetails({{ camp.id }}, '{{ camp.name | escape }}', '{{ camp.camp_type | escape }}', '{{ camp.age_group | escape }}', '{{ camp.date | escape }}', '{{ camp.time | escape }}', '{{ camp.location | escape }}', '{{ camp.organizer | escape }}', '{{ camp.description | escape }}')" style="cursor: pointer;">
+            <div class="item-info">
+                <h3 class="item-title">{{ camp.name }}</h3>
+                <p class="item-desc">{{ camp.description | truncate(65) }}</p>
+                <span class="badge-age"><i class="bi bi-calendar-event"></i> {{ camp.date }}</span>
+            </div>
+            <a href="/camp/{{ camp.id }}" class="btn-card-action btn-solid-primary" onclick="event.stopPropagation();">
+                {{ _t('Book Now') }} <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
+        {% endfor %}
+
+        <!-- Map Preview Card -->
+        <div class="map-preview-card">
+            <div class="section-title-bar" style="margin-bottom: 8px;">
+                <h3 style="font-size: 0.95rem; font-weight: 800;">Government Services Near You</h3>
+            </div>
+            
+            <div class="map-placeholder">
+                <div style="text-align: center;">
+                    <i class="bi bi-map-fill text-primary" style="font-size: 2.2rem; display: block; margin-bottom: 6px;"></i>
+                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary);">Interactive Service Map</span>
+                    <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Showing 3 active welfare camps nearby</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="bi bi-geo-alt-fill text-danger"></i> Visakhapatnam, AP</span>
+                <button class="btn-card-action btn-outline-primary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="showToast('Loading full neighborhood layout map...')">View Full Map</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Announcements Row -->
+<div class="announcements-grid">
+    <div class="announcement-card">
+        <div class="announcement-icon">
+            <i class="bi bi-megaphone-fill"></i>
+        </div>
+        <div class="announcement-content">
+            <div class="announcement-tag">{{ _t('New Scheme Launched!') }}</div>
+            <div class="announcement-title">{{ _t('PM Vishwakarma Yojana') }}</div>
+            <div class="announcement-desc">{{ _t('Financial & tool support for traditional artisans.') }}</div>
+        </div>
+        <a href="/schemes?query=Vishwakarma" class="btn-card-action btn-solid-primary" style="padding: 6px 14px; font-size: 0.8rem;">
+            {{ _t('Know More') }} <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="announcement-card">
+        <div class="announcement-icon" style="background: rgba(16, 185, 129, 0.08); color: var(--secondary);">
+            <i class="bi bi-hospital-fill"></i>
+        </div>
+        <div class="announcement-content">
+            <div class="announcement-tag" style="color: var(--secondary);">{{ _t('Mega Health Camp Scheduled!') }}</div>
+            <div class="announcement-title">{{ _t('Free Checkups & Medicines') }}</div>
+            <div class="announcement-desc">{{ _t('Free checkups & medicines for all. Limited slots. Book now!') }}</div>
+        </div>
+        <a href="/camps" class="btn-card-action btn-solid-primary" style="padding: 6px 14px; font-size: 0.8rem; background: linear-gradient(135deg, #10b981, #059669);">
+            {{ _t('View Schedule') }} <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+</div>
+
+<script>
+// Mobile details bottom sheet triggers
+function showSchemeDetails(id, name, category, age, description, benefits, link) {
+    if (window.innerWidth <= 768) {
+        const html = `
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <span class="badge-age" style="align-self: flex-start;">${category} (${age})</span>
+                <p style="font-size: 0.9rem; line-height: 1.4;">${description}</p>
+                <div style="background: var(--bg-app); padding: 12px; border-radius: 8px; font-size: 0.85rem;">
+                    <strong>Benefits:</strong> ${benefits}
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 12px;">
+                    <form action="/apply/${id}" method="POST" style="flex: 1;">
+                        <button type="submit" class="btn-card-action btn-solid-primary" style="width: 100%; justify-content: center; padding: 12px;">Apply Now</button>
+                    </form>
+                    <a href="${link}" target="_blank" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;"><i class="bi bi-box-arrow-up-right"></i> Website</a>
+                </div>
+            </div>
+        `;
+        openBottomSheet(name, html);
+    }
+}
+
+function showCampDetails(id, name, type, age, date, time, location, organizer, description) {
+    if (window.innerWidth <= 768) {
+        const html = `
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <span class="badge-age" style="align-self: flex-start; background: rgba(16, 185, 129, 0.08); color: var(--secondary);">${type}</span>
+                <p style="font-size: 0.9rem; line-height: 1.4;">${description}</p>
+                <div style="background: var(--bg-app); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem;">
+                    <div><i class="bi bi-calendar3 text-primary"></i> <strong>Date & Time:</strong> ${date} | ${time}</div>
+                    <div><i class="bi bi-geo-alt-fill text-danger"></i> <strong>Location:</strong> ${location}</div>
+                    <div><i class="bi bi-building"></i> <strong>Organizer:</strong> ${organizer}</div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 12px;">
+                    <a href="/camp/${id}" class="btn-card-action btn-solid-primary" style="flex: 1; justify-content: center; padding: 12px; background: linear-gradient(135deg, #10b981, #047857);">Book Appointment</a>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=${location}" target="_blank" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;"><i class="bi bi-map-fill"></i> Map</a>
+                </div>
+            </div>
+        `;
+        openBottomSheet(name, html);
+    }
+}
+</script>
+{% endblock %}

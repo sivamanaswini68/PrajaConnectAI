@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _t('Government Schemes') }} - PrajaConnectAI{% endblock %}
+
+{% block content %}
+<div class="hero-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 class="hero-welcome">{{ _t('Government Schemes') }}</h1>
+            <p class="hero-subtitle">{{ _t('Explore, Apply & Track Schemes') }}</p>
+        </div>
+        <button class="btn-card-action btn-solid-primary" onclick="toggleFloatingAi()">
+            <i class="bi bi-robot"></i> {{ _t('AI Assistant') }}
+        </button>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="item-card" style="margin-bottom: 24px; padding: 20px;">
+    <form action="/schemes" method="GET" style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <input type="text" 
+                   name="query" 
+                   value="{{ selected_query }}" 
+                   class="form-control" 
+                   placeholder="{{ _t('Search government schemes or health camps...') }}" 
+                   style="flex: 1; min-width: 240px;">
+
+            <select name="age_group" class="form-control" style="width: 180px;" onchange="this.form.submit()">
+                <option value="All" {% if selected_age == 'All' %}selected{% endif %}>{{ _t('More') }}</option>
+                <option value="0-18" {% if selected_age == '0-18' %}selected{% endif %}>0 - 18 Years</option>
+                <option value="18-40" {% if selected_age == '18-40' %}selected{% endif %}>18 - 40 Years</option>
+                <option value="40-60" {% if selected_age == '40-60' %}selected{% endif %}>40 - 60 Years</option>
+                <option value="60+" {% if selected_age == '60+' %}selected{% endif %}>60+ Senior Citizens</option>
+            </select>
+
+            <button type="submit" class="btn-card-action btn-solid-primary" style="padding: 12px 20px;">
+                <i class="bi bi-funnel-fill"></i> Filter
+            </button>
+        </div>
+
+        <!-- Category Pills -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-right: 4px;">Category:</span>
+            {% set categories = ['All', 'Students', 'Women', 'Farmers', 'Workers', 'Senior Citizens', 'Health'] %}
+            {% for cat in categories %}
+            <a href="/schemes?category={{ cat }}&age_group={{ selected_age }}" 
+               class="btn-card-action {% if selected_category == cat %}btn-solid-primary{% else %}btn-outline-primary{% endif %}" 
+               style="padding: 4px 12px; font-size: 0.8rem; border-radius: 16px;">
+               {{ _t(cat) }}
+            </a>
+            {% endfor %}
+        </div>
+    </form>
+</div>
+
+<!-- Schemes List Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+    {% if schemes %}
+        {% for raw_scheme in schemes %}
+        {% set s = get_translated_scheme(raw_scheme) %}
+        <div class="item-card" onclick="showSchemeDetails({{ s.id }}, '{{ s.name | escape }}', '{{ s.category | escape }}', '{{ s.age_group | escape }}', '{{ s.description | escape }}', '{{ s.benefits | escape }}', '{{ s.official_link | escape }}')" style="cursor: pointer;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: flex-start;">
+                <span class="badge-age" style="background: rgba(37, 99, 235, 0.08); color: var(--primary);">
+                    <i class="bi {{ s.icon or 'bi-award' }}"></i> {{ _t(s.category) }}
+                </span>
+                <span class="badge-age"><i class="bi bi-person"></i> {{ s.age_group }}</span>
+            </div>
+
+            <div>
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">{{ s.name }}</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">{{ s.description | truncate(120) }}</p>
+            </div>
+
+            <div style="background: var(--bg-app); padding: 10px 14px; border-radius: 12px; width: 100%; font-size: 0.82rem; color: var(--text-primary);">
+                <strong><i class="bi bi-gift-fill text-primary"></i> {{ _t('Key Benefits') }}:</strong> {{ s.benefits | truncate(80) }}
+            </div>
+
+            <div style="margin-top: auto; display: flex; justify-content: space-between; width: 100%; align-items: center; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="bi bi-box-arrow-up-right"></i> {{ _t('Official Website') }}</span>
+                <span class="btn-card-action btn-outline-primary" style="padding: 4px 12px; font-size: 0.78rem;">{{ _t('View Details') }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="item-card" style="grid-column: 1 / -1; text-align: center; padding: 40px; align-items: center;">
+            <i class="bi bi-search" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 12px;"></i>
+            <h3>No schemes found</h3>
+            <a href="/schemes" class="btn-card-action btn-outline-primary" style="margin-top: 16px;">Clear Filters</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function showSchemeDetails(id, name, category, age, description, benefits, link) {
+    const html = `
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <span class="badge-age" style="align-self: flex-start;">${category} (${age})</span>
+            <p style="font-size: 0.9rem; line-height: 1.4;">${description}</p>
+            <div style="background: var(--bg-app); padding: 12px; border-radius: 8px; font-size: 0.85rem;">
+                <strong>Benefits:</strong> ${benefits}
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 12px;">
+                <form action="/apply/${id}" method="POST" style="flex: 1;">
+                    <button type="submit" class="btn-card-action btn-solid-primary" style="width: 100%; justify-content: center; padding: 12px;">Apply Now</button>
+                </form>
+                <a href="${link}" target="_blank" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;"><i class="bi bi-box-arrow-up-right"></i> Website</a>
+            </div>
+        </div>
+    `;
+    openBottomSheet(name, html);
+}
+</script>
+{% endblock %}

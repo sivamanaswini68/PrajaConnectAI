@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _t('Health & Wellness') }} - PrajaConnectAI{% endblock %}
+
+{% block content %}
+<div class="hero-card" style="background: linear-gradient(135deg, #ecfdf5 0%, #e0e7ff 100%);">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 class="hero-welcome" style="color: #064e3b;">{{ _t('Health & Wellness') }}</h1>
+            <p class="hero-subtitle" style="color: #047857;">{{ _t('Book Camps & Stay Healthy') }}</p>
+        </div>
+        <button class="btn-card-action btn-solid-primary" onclick="toggleFloatingAi()" style="background: linear-gradient(135deg, #10b981, #059669);">
+            <i class="bi bi-robot"></i> {{ _t('AI Assistant') }}
+        </button>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="item-card" style="margin-bottom: 24px; padding: 20px;">
+    <form action="/camps" method="GET" style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <input type="text" 
+                   name="query" 
+                   value="{{ selected_query }}" 
+                   class="form-control" 
+                   placeholder="{{ _t('Search government schemes or health camps...') }}" 
+                   style="flex: 1; min-width: 240px;">
+
+            <select name="district" class="form-control" style="width: 180px;" onchange="this.form.submit()">
+                <option value="All" {% if selected_district == 'All' %}selected{% endif %}>{{ _t('More') }}</option>
+                <option value="Visakhapatnam" {% if selected_district == 'Visakhapatnam' %}selected{% endif %}>Visakhapatnam</option>
+                <option value="Guntur" {% if selected_district == 'Guntur' %}selected{% endif %}>Guntur</option>
+                <option value="Vijayawada" {% if selected_district == 'Vijayawada' %}selected{% endif %}>Vijayawada</option>
+                <option value="Hyderabad" {% if selected_district == 'Hyderabad' %}selected{% endif %}>Hyderabad</option>
+            </select>
+
+            <button type="submit" class="btn-card-action btn-solid-primary" style="padding: 12px 20px; background: linear-gradient(135deg, #10b981, #047857);">
+                <i class="bi bi-funnel-fill"></i> Filter
+            </button>
+        </div>
+
+        <!-- Type Pills -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-right: 4px;">Camp Type:</span>
+            {% set types = ['All', 'Blood Donation', 'Eye', 'Dental', 'Health Checkup', 'Diabetes'] %}
+            {% for t in types %}
+            <a href="/camps?type={{ t }}&district={{ selected_district }}" 
+               class="btn-card-action {% if selected_type == t %}btn-solid-primary{% else %}btn-outline-primary{% endif %}" 
+               style="padding: 4px 12px; font-size: 0.8rem; border-radius: 16px;">
+               {{ _t(t) }}
+            </a>
+            {% endfor %}
+        </div>
+    </form>
+</div>
+
+<!-- Camps List Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+    {% if camps %}
+        {% for c in camps %}
+        <div class="item-card" onclick="showCampDetails({{ c.id }}, '{{ c.name | escape }}', '{{ c.camp_type | escape }}', '{{ c.age_group | escape }}', '{{ c.date | escape }}', '{{ c.time | escape }}', '{{ c.location | escape }}', '{{ c.organizer | escape }}', '{{ c.description | escape }}')" style="cursor: pointer;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: flex-start;">
+                <span class="badge-age" style="background: #dcfce7; color: #166534;">
+                    <i class="bi bi-hospital"></i> {{ _t(c.camp_type) }}
+                </span>
+                <span class="badge-age"><i class="bi bi-person"></i> {{ c.age_group }}</span>
+            </div>
+
+            <div>
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">{{ c.name }}</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">{{ c.description | truncate(120) }}</p>
+            </div>
+
+            <div style="background: var(--bg-app); padding: 10px 14px; border-radius: 12px; width: 100%; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 4px;">
+                <div><i class="bi bi-calendar3 text-primary"></i> <strong>Date & Time:</strong> {{ c.date }} | {{ c.time }}</div>
+                <div><i class="bi bi-geo-alt-fill text-danger"></i> <strong>Location:</strong> {{ c.location }}</div>
+            </div>
+
+            <div style="margin-top: auto; display: flex; justify-content: space-between; width: 100%; align-items: center; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                <span style="font-size: 0.8rem; color: var(--primary); font-weight: 700;"><i class="bi bi-map-fill"></i> View Details</span>
+                <span class="btn-card-action btn-solid-primary" style="padding: 4px 12px; font-size: 0.78rem; background: linear-gradient(135deg, #10b981, #047857);">Book now</span>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="item-card" style="grid-column: 1 / -1; text-align: center; padding: 40px; align-items: center;">
+            <i class="bi bi-calendar-x" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 12px;"></i>
+            <h3>No health camps found</h3>
+            <a href="/camps" class="btn-card-action btn-outline-primary" style="margin-top: 16px;">Clear Filters</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function showCampDetails(id, name, type, age, date, time, location, organizer, description) {
+    const html = `
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <span class="badge-age" style="align-self: flex-start; background: rgba(16, 185, 129, 0.08); color: var(--secondary);">${type}</span>
+            <p style="font-size: 0.9rem; line-height: 1.4;">${description}</p>
+            <div style="background: var(--bg-app); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem;">
+                <div><i class="bi bi-calendar3 text-primary"></i> <strong>Date & Time:</strong> ${date} | ${time}</div>
+                <div><i class="bi bi-geo-alt-fill text-danger"></i> <strong>Location:</strong> ${location}</div>
+                <div><i class="bi bi-building"></i> <strong>Organizer:</strong> ${organizer}</div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 12px;">
+                <a href="/camp/${id}" class="btn-card-action btn-solid-primary" style="flex: 1; justify-content: center; padding: 12px; background: linear-gradient(135deg, #10b981, #047857);">Book Appointment</a>
+                <a href="https://www.google.com/maps/dir/?api=1&destination=${location}" target="_blank" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;"><i class="bi bi-map-fill"></i> Get Directions</a>
+            </div>
+        </div>
+    `;
+    openBottomSheet(name, html);
+}
+</script>
+{% endblock %}

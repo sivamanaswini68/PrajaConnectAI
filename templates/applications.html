@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _t('My Scheme Applications') }} - PrajaConnectAI{% endblock %}
+
+{% block content %}
+<div class="hero-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 class="hero-welcome">{{ _t('My Scheme Applications') }}</h1>
+            <p class="hero-subtitle">{{ _t('Track your real-time application status and progress for government benefits.') }}</p>
+        </div>
+        <a href="/schemes" class="btn-card-action btn-solid-primary">
+            <i class="bi bi-plus-lg"></i> {{ _t('Schemes') }}
+        </a>
+    </div>
+</div>
+
+<div style="max-width: 800px; margin: 0 auto;">
+    {% if applications %}
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            {% for app in applications %}
+            <div class="item-card" style="padding: 20px; gap: 16px;">
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Application #{{ app.id }}</span>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-top: 2px;">{{ app.scheme_name }}</h3>
+                    </div>
+
+                    <!-- Status Badge -->
+                    <div>
+                        {% if app.status == 'Submitted' %}
+                            <span class="badge-age" style="background: #dcfce7; color: #166534; font-weight: 700; padding: 6px 14px; font-size: 0.8rem;">
+                                <i class="bi bi-check-circle-fill"></i> {{ _t('Submitted') }}
+                            </span>
+                        {% elif app.status == 'Completed' %}
+                            <span class="badge-age" style="background: #dbeafe; color: #1e40af; font-weight: 700; padding: 6px 14px; font-size: 0.8rem;">
+                                <i class="bi bi-patch-check-fill"></i> Completed / Approved
+                            </span>
+                        {% else %}
+                            <span class="badge-age" style="background: #fef3c7; color: #92400e; font-weight: 700; padding: 6px 14px; font-size: 0.8rem;">
+                                <i class="bi bi-clock-history"></i> {{ _t(app.status or 'Draft') }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Progress Bar / Timeline -->
+                <div style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                        <span>Draft</span>
+                        <span>Started</span>
+                        <span>{{ _t('Submitted') }}</span>
+                        <span>Approved</span>
+                    </div>
+                    <div style="width: 100%; background: var(--border-color); height: 8px; border-radius: 4px; overflow: hidden;">
+                        {% set progress_width = '25%' %}
+                        {% if app.status == 'Started' %}{% set progress_width = '50%' %}{% endif %}
+                        {% if app.status == 'Submitted' %}{% set progress_width = '75%' %}{% endif %}
+                        {% if app.status == 'Completed' %}{% set progress_width = '100%' %}{% endif %}
+                        <div style="width: {{ progress_width }}; background: var(--primary-gradient); height: 100%; border-radius: 4px; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; padding-top: 10px; border-top: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted);">
+                    <div><i class="bi bi-calendar3"></i> Applied Date: {{ app.submitted_date }}</div>
+
+                    <div style="display: flex; gap: 10px;">
+                        {% if app.status != 'Submitted' and app.status != 'Completed' %}
+                        <form action="/applications/update_status/{{ app.id }}" method="POST">
+                            <input type="hidden" name="status" value="Submitted">
+                            <button type="submit" class="btn-card-action btn-solid-primary" style="padding: 6px 14px; font-size: 0.78rem;">
+                                <i class="bi bi-send"></i> {{ _t('Mark as Submitted') }}
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        <a href="/scheme/{{ app.scheme_id }}" class="btn-card-action btn-outline-primary" style="padding: 6px 14px; font-size: 0.78rem;">
+                            {{ _t('View Details') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="item-card" style="text-align: center; padding: 50px 20px; align-items: center;">
+            <i class="bi bi-journal-x" style="font-size: 3.5rem; color: var(--text-muted); margin-bottom: 16px;"></i>
+            <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 8px;">No Applications Yet</h3>
+            <a href="/schemes" class="btn-card-action btn-solid-primary" style="padding: 12px 24px;">
+                {{ _t('Explore Schemes') }}
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

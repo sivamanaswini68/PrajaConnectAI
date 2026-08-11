@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PrajaConnectAI - 2-in-1 Citizen Benefit App{% endblock %}</title>
+    <meta name="description" content="One platform. Many benefits. Every scheme. Every citizen. One tap away.">
+    
+    <!-- Google Fonts & Bootstrap Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Floating Home Header -->
+        <nav class="navbar" id="mainNavbar">
+            <a href="/" class="nav-brand">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" 
+                     alt="PrajaConnectAI Logo" 
+                     class="nav-logo"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                
+                <div style="display:none; flex-direction:column;">
+                    <span class="brand-title">PrajaConnectAI</span>
+                    <span class="brand-tagline">Gateway to Govt Benefits</span>
+                </div>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <div class="nav-links">
+                <a href="/" class="nav-link {% if active_page == 'home' %}active{% endif %}">{{ _t('Home') }}</a>
+                <a href="/schemes" class="nav-link {% if active_page == 'schemes' %}active{% endif %}">{{ _t('Schemes') }}</a>
+                <a href="/camps" class="nav-link {% if active_page == 'camps' %}active{% endif %}">{{ _t('Health Camps') }}</a>
+                <a href="/applications" class="nav-link {% if active_page == 'applications' %}active{% endif %}">{{ _t('Applications') }}</a>
+                <a href="/assistant" class="nav-link {% if active_page == 'assistant' %}active{% endif %}">{{ _t('AI Assistant') }}</a>
+                <a href="/profile" class="nav-link {% if active_page == 'profile' %}active{% endif %}">{{ _t('Profile') }}</a>
+            </div>
+
+            <!-- Navbar Right Actions -->
+            <div class="nav-actions">
+                <!-- Location Selector Pill -->
+                <button type="button" class="location-selector" onclick="openLocationModal()" aria-label="Select Location">
+                    <i class="bi bi-geo-alt-fill text-danger"></i>
+                    <span id="headerLocationText">{{ current_user.district or 'Visakhapatnam' }}, {{ current_user.state or 'AP' }}</span>
+                </button>
+
+                <!-- Theme Switcher Button -->
+                <button type="button" class="nav-icon-btn" onclick="toggleTheme()" title="Toggle Theme" aria-label="Toggle Theme">
+                    <i class="bi bi-sun-fill" id="themeIcon"></i>
+                </button>
+
+                <!-- Language Selector -->
+                <button type="button" class="nav-icon-btn" onclick="openLangModal()" title="Language selector" aria-label="Language selector">
+                    <i class="bi bi-translate"></i>
+                </button>
+
+                <!-- Notification Bell with Unread Badge -->
+                <button type="button" class="nav-icon-btn" onclick="openNotificationDrawer()" title="Notifications" aria-label="Notifications">
+                    <i class="bi bi-bell"></i>
+                    <span class="badge" id="notiBadge">3</span>
+                </button>
+
+                <a href="/profile" class="user-profile-badge" title="Profile & Preferences" aria-label="Profile">
+                    <i class="bi bi-person-fill"></i>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Dynamic Content Block -->
+        <main class="content-area">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- PhonePe-style Fixed Mobile Bottom Navigation Bar (Hidden on desktop screens > 768px) -->
+    <nav class="bottom-nav">
+        <a href="/" class="bnav-item {% if active_page == 'home' %}active{% endif %}">
+            <i class="bi bi-house-door-fill"></i>
+            <span>{{ _t('Home') }}</span>
+        </a>
+        <a href="/schemes" class="bnav-item {% if active_page == 'schemes' %}active{% endif %}">
+            <i class="bi bi-bank2"></i>
+            <span>{{ _t('Schemes') }}</span>
+        </a>
+
+        <!-- Central Floating QR Scan Button -->
+        <button class="bnav-qr-btn" onclick="openQRModal()" title="Scan QR Code" aria-label="Scan QR Code">
+            <i class="bi bi-qr-code-scan"></i>
+            <span>{{ _t('Scan') }}</span>
+        </button>
+
+        <a href="/applications" class="bnav-item {% if active_page == 'applications' %}active{% endif %}">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>{{ _t('Applications') }}</span>
+        </a>
+        <a href="/profile" class="bnav-item {% if active_page == 'profile' %}active{% endif %}">
+            <i class="bi bi-person-circle"></i>
+            <span>{{ _t('Profile') }}</span>
+        </a>
+    </nav>
+
+    <!-- Floating AI Assistant Button -->
+    <button class="floating-ai-trigger" id="floatingAiBtn" onclick="toggleFloatingAi()" title="Ask Praja AI" aria-label="Ask AI">
+        <i class="bi bi-robot"></i>
+    </button>
+
+    <!-- Floating AI Chat Panel -->
+    <div class="ai-panel" id="floatingAiPanel">
+        <div class="ai-panel-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-robot" style="font-size: 1.25rem;"></i>
+                <div>
+                    <div style="font-weight: 800; font-size: 0.9rem;">Praja AI Assistant</div>
+                    <div style="font-size: 0.68rem; opacity: 0.85;">2-in-1 Citizen Helpdesk</div>
+                </div>
+            </div>
+            <button class="sheet-close-btn" style="color: white;" onclick="toggleFloatingAi()">&times;</button>
+        </div>
+        <div class="ai-panel-messages" id="floatingAiMessages">
+            <div class="message-bubble msg-ai">
+                Namaste! 👋 I am your Praja AI assistant. Ask me anything about schemes, eligibility, documents, or nearby health camps!
+            </div>
+        </div>
+        
+        <!-- Suggested Questions Chips -->
+        <div class="ai-suggested-queries">
+            <div class="suggested-chip" onclick="sendSuggestedQuery('What schemes am I eligible for?')">What schemes am I eligible for?</div>
+            <div class="suggested-chip" onclick="sendSuggestedQuery('What government camps are nearby?')">What government camps are nearby?</div>
+            <div class="suggested-chip" onclick="sendSuggestedQuery('Show student schemes')">Show student schemes</div>
+            <div class="suggested-chip" onclick="sendSuggestedQuery('Show women welfare schemes')">Show women schemes</div>
+            <div class="suggested-chip" onclick="sendSuggestedQuery('Show employment schemes')">Show job schemes</div>
+        </div>
+        
+        <!-- Chat Input Form -->
+        <form class="chat-input-area" id="floatingAiForm" onsubmit="handleFloatingAiSubmit(event)">
+            <input type="text" id="floatingAiInput" class="chat-input" placeholder="Ask about schemes/camps..." required>
+            <button type="submit" class="chat-send-btn" aria-label="Send message"><i class="bi bi-send-fill"></i></button>
+        </form>
+    </div>
+
+    <!-- Bottom Sheet Drawer -->
+    <div class="sheet-overlay" id="bottomSheetOverlay" onclick="closeBottomSheet()"></div>
+    <div class="bottom-sheet" id="detailBottomSheet">
+        <div class="sheet-handle" id="sheetDragHandle"></div>
+        <div class="sheet-header">
+            <h3 class="sheet-title" id="bottomSheetTitle">Service Detail</h3>
+            <button class="sheet-close-btn" onclick="closeBottomSheet()">&times;</button>
+        </div>
+        <div class="sheet-content" id="bottomSheetContent">
+            <!-- Dynamic Content -->
+        </div>
+    </div>
+
+    <!-- Notification Drawer -->
+    <div class="sheet-overlay" id="notificationOverlay" onclick="closeNotificationDrawer()"></div>
+    <div class="bottom-sheet" id="notificationBottomSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+            <h3 class="sheet-title"><i class="bi bi-bell-fill text-primary"></i> Smart Notifications</h3>
+            <button class="sheet-close-btn" onclick="closeNotificationDrawer()">&times;</button>
+        </div>
+        <div class="sheet-content">
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div class="item-card" style="padding: 14px;">
+                    <div style="font-weight: 800; font-size: 0.88rem; color: var(--primary);">📍 Mega Health Camp Nearby</div>
+                    <div style="font-size: 0.8rem; margin: 4px 0; color: var(--text-muted);">Free eye, dental & blood pressure checkup scheduled next week in Visakhapatnam.</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">1 hour ago</div>
+                </div>
+                <div class="item-card" style="padding: 14px;">
+                    <div style="font-weight: 800; font-size: 0.88rem; color: var(--warning);">📢 Scheme Application Deadline Approaching</div>
+                    <div style="font-size: 0.8rem; margin: 4px 0; color: var(--text-muted);">PM Vishwakarma Yojana application registration phase closes soon. Check eligibility now.</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">4 hours ago</div>
+                </div>
+                <div class="item-card" style="padding: 14px;">
+                    <div style="font-weight: 800; font-size: 0.88rem; color: var(--secondary);">✨ New Government Scheme Available</div>
+                    <div style="font-size: 0.8rem; margin: 4px 0; color: var(--text-muted);">Post-Matric Scholarships are accepting fresh online registrations.</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">1 day ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Selector Modal -->
+    <div class="modal-overlay" id="locationModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="bi bi-geo-alt-fill text-danger"></i> Select District / Location</h3>
+                <button class="close-btn" onclick="closeLocationModal()">&times;</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;" onclick="changeLocation('Visakhapatnam')">Visakhapatnam</button>
+                <button class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;" onclick="changeLocation('Guntur')">Guntur</button>
+                <button class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;" onclick="changeLocation('Vijayawada')">Vijayawada</button>
+                <button class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;" onclick="changeLocation('Hyderabad')">Hyderabad</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Selector Modal -->
+    <div class="modal-overlay" id="langModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="bi bi-translate text-primary"></i> Select Language / భాషను ఎంచుకోండి</h3>
+                <button class="close-btn" onclick="closeLangModal()">&times;</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button type="button" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;" onclick="selectLanguage('English'); closeLangModal();">English</button>
+                <button type="button" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;" onclick="selectLanguage('Telugu'); closeLangModal();">తెలుగు (Telugu)</button>
+                <button type="button" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;" onclick="selectLanguage('Hindi'); closeLangModal();">हिन्दी (Hindi)</button>
+                <button type="button" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;" onclick="selectLanguage('Tamil'); closeLangModal();">தமிழ் (Tamil)</button>
+                <button type="button" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;" onclick="selectLanguage('Kannada'); closeLangModal();">ಕನ್ನಡ (Kannada)</button>
+                <button type="button" class="btn-card-action btn-outline-primary" style="justify-content: center; padding: 12px;" onclick="selectLanguage('Malayalam'); closeLangModal();">മലയാളം (Malayalam)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Scan Modal -->
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal-card" style="text-align: center;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="bi bi-qr-code-scan"></i> Citizen QR Scanner</h3>
+                <button class="close-btn" onclick="closeQRModal()">&times;</button>
+            </div>
+            <div style="padding: 20px 0;">
+                <div style="width: 180px; height: 180px; margin: 0 auto 16px auto; background: var(--bg-card-hover); border-radius: 20px; display: flex; align-items: center; justify-content: center; border: 2px dashed var(--border-color);">
+                    <i class="bi bi-qr-code" style="font-size: 5rem; color: var(--text-muted);"></i>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">
+                    Scan scheme pamphlets or health camp registration QR codes for instant details.
+                </p>
+                <button class="btn-primary-block" onclick="showToast('Camera scanner activated. Point camera at QR code.'); closeQRModal();">
+                    Start Camera Scan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
